@@ -1,124 +1,159 @@
-const sections = [
-  "navbar",
-  "hero",
-  "services",
-  "products",
-  "about",
-  "testimonials",
-  "gallery",
-  "footer"
-];
+// --- KONFIGURASI GLOBAL ---
+const sections = ["navbar", "hero", "services", "products", "about", "testimonials", "gallery", "team", "kontak", "footer"];
 
-document.addEventListener('DOMContentLoaded', () => {
-    const navLinks = document.querySelectorAll('.nav-link');
-    const sections = document.querySelectorAll('section, header'); // Termasuk header/hero
+// --- FUNGSI UTAMA ---
 
-    const observerOptions = {
-        root: null,
-        threshold: 0.5 // Aktif jika 50% bagian terlihat
-    };
+document.addEventListener("DOMContentLoaded", () => {
+  // 1. CEK STATUS LOGIN (Untuk Navbar)
+  checkLoginStatus();
 
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const id = entry.target.getAttribute('id');
-                
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === `#${id}`) {
-                        link.classList.add('active');
-                    }
-                });
-            }
-        });
-    }, observerOptions);
+  // 2. LOGIKA HALAMAN LOGIN
+  const loginForm = document.getElementById("loginForm");
+  if (loginForm) {
+    loginForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const usernameInput = document.getElementById("username").value;
+      const passwordInput = document.getElementById("password").value;
 
-    sections.forEach(section => {
-        if (section.id) observer.observe(section);
+      if (usernameInput === "user" && passwordInput === "123") {
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("username", usernameInput);
+        alert("Login Berhasil!");
+
+        window.location.href = "../index.html";
+      } else {
+        const errorMsg = document.getElementById("error-msg");
+        if (errorMsg) {
+          errorMsg.style.display = "block";
+          setTimeout(() => {
+            errorMsg.style.display = "none";
+          }, 3000);
+        }
+      }
     });
-});
+    return;
+  }
 
-sections.forEach(section => {
-  fetch(`sections/${section}.html`)
-    .then(res => res.text())
-    .then(html => {
-      document.getElementById(section).innerHTML = html;
+  if (document.getElementById("navbar")) {
+    sections.forEach((section) => {
+      const el = document.getElementById(section);
+      if (el) {
+        fetch(`sections/${section}.html`)
+          .then((res) => res.text())
+          .then((html) => {
+            el.innerHTML = html;
+
+            if (section === "navbar") initMobileNavbar();
+            if (section === "testimonials") initTestimonials();
+            if (section === "kontak") initKontakForm(); // ⬅️ TAMBAH INI
+          })
+
+          .catch((err) => console.warn(`Gagal memuat ${section}`));
+      }
     });
-});
+    initScrollEffects();
+  }
 
-// Mobile menu
-document.addEventListener("click", e => {
-  if (e.target.id === "menu-toggle") {
-    document.getElementById("mobile-menu").classList.toggle("hidden");
+  // 4. FORM KONTAK
+  const formKontak = document.getElementById("formKontak");
+  if (formKontak) {
+    formKontak.addEventListener("submit", function (e) {
+      e.preventDefault();
+      Swal.fire({
+        title: "Mengirim...",
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+      setTimeout(() => {
+        Swal.fire({ icon: "success", title: "Terkirim!", confirmButtonColor: "#2563eb" });
+        formKontak.reset();
+      }, 1500);
+    });
   }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    const heroBg = document.querySelector('#hero-bg');
+// --- Form Login ---
 
-    // Efek Parallax sederhana saat scroll
-    window.addEventListener('scroll', () => {
-        let offset = window.pageYOffset;
-        if (heroBg) {
-            heroBg.style.transform = `translateY(${offset * 0.5}px)`;
-        }
-    });
+function checkLoginStatus() {
+  const isLoggedIn = localStorage.getItem("isLoggedIn");
+  const username = localStorage.getItem("username");
 
-    console.log("LogiTracks App Ready!");
-});
+  setTimeout(() => {
+    const loginBtn = document.querySelector('a[href*="login.html"]');
 
-document.addEventListener('DOMContentLoaded', () => {
-  const testimonials = document.querySelectorAll('.testimonial-card');
-  
-  const revealTestimonials = () => {
-    testimonials.forEach((card, index) => {
-      const cardTop = card.getBoundingClientRect().top;
-      const trigger = window.innerHeight * 0.9;
-      
-      if (cardTop < trigger) {
-        setTimeout(() => {
-          card.style.opacity = '1';
-          card.style.transform = 'translateY(0)';
-        }, index * 150); // Efek muncul bergantian (stagger)
-      }
-    });
-  };
+    if (isLoggedIn === "true" && loginBtn) {
+      const userMenu = document.createElement("div");
+      userMenu.className = "flex items-center gap-4 ml-4";
+      userMenu.innerHTML = `
+                <span class="text-gray-700 text-sm font-medium">
+                    Halo, <b class="text-blue-600">${username}</b>
+                </span>
+                <button id="logoutBtn" class="px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition text-sm">
+                    Logout
+                </button>
+            `;
 
-  // Set initial state untuk animasi
-  testimonials.forEach(card => {
-    card.style.opacity = '0';
-    card.style.transform = 'translateY(20px)';
-    card.style.transition = 'all 0.6s ease-out';
-  });
+      loginBtn.parentNode.replaceChild(userMenu, loginBtn);
 
-  window.addEventListener('scroll', revealTestimonials);
-  revealTestimonials(); // Panggil saat load pertama kali
-});
-
-// Fungsi untuk memuat file HTML ke dalam elemen berdasarkan ID
-function loadSection(id, filePath) {
-    fetch(filePath)
-        .then(response => {
-            if (!response.ok) throw new Error('Gagal memuat ' + filePath);
-            return response.text();
-        })
-        .then(data => {
-            document.getElementById(id).innerHTML = data;
-        })
-        .catch(error => console.error('Error:', error));
+      document.getElementById("logoutBtn").onclick = () => {
+        localStorage.clear();
+        window.location.reload();
+      };
+    }
+  }, 500);
 }
 
-// Panggil semua bagian
-document.addEventListener("DOMContentLoaded", function() {
-    loadSection('navbar', 'sections/navbar.html');
-    loadSection('hero', 'sections/hero.html');
-    loadSection('services', 'sections/services.html');
-    loadSection('products', 'sections/products.html');
-    loadSection('about', 'sections/about.html');
-    loadSection('testimonials', 'sections/testimonials.html');
-    loadSection('gallery', 'sections/gallery.html');
-    loadSection('team', 'sections/team.html');
-    loadSection('kontak', 'sections/kontak.html'); 
-    loadSection('footer', 'sections/footer.html');
-});
+function initMobileNavbar() {
+  const btn = document.getElementById("menu-btn");
+  const menu = document.getElementById("mobile-menu");
+  if (btn && menu) {
+    btn.onclick = () => menu.classList.toggle("hidden");
+    menu.querySelectorAll("a").forEach((link) => {
+      link.onclick = () => menu.classList.add("hidden");
+    });
+  }
+}
 
+function initScrollEffects() {
+  const heroBg = document.querySelector("#hero-bg");
+  window.addEventListener("scroll", () => {
+    if (heroBg) {
+      let offset = window.pageYOffset;
+      heroBg.style.transform = `translateY(${offset * 0.5}px)`;
+    }
+  });
+}
+
+function initTestimonials() {
+  const cards = document.querySelectorAll(".testimonial-card");
+  cards.forEach((card) => {
+    card.style.opacity = "1";
+    card.style.transform = "translateY(20px)";
+    card.style.transition = "all 0.6s ease-out";
+  });
+}
+function initKontakForm() {
+  const formKontak = document.getElementById("formKontak");
+  if (!formKontak) return;
+
+  formKontak.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+    // ❌ Belum login → redirect
+    if (isLoggedIn !== "true") {
+      alert("Silakan login terlebih dahulu sebelum mengirim pesan.");
+      window.location.href = "sections/login.html";
+      return;
+    }
+
+    // ✅ Sudah login → tampilkan pesan sukses
+    alert(
+      "Pertanyaan mu sedang kami proses, jawaban akan kami kirim secepatnya melalui email terkait. terimakasi"
+    );
+
+    formKontak.reset();
+  });
+}

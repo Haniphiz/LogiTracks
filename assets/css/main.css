@@ -47,6 +47,18 @@ html {
     box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.05);
 }
 
+.testimonial-card img {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  object-fit: cover;
+  border-radius: 9999px;
+  display: block;
+}
+
+
+
 .testimonial-card:hover {
     @apply -translate-y-2 border-blue-200;
     box-shadow: 0 20px 40px -20px rgba(37, 99, 235, 0.15);
@@ -61,4 +73,77 @@ html {
 /* Memastikan kartu sejajar secara vertikal */
 .testimonial-card > div {
     min-height: 100%;
+}
+
+.nav-link {
+  @apply text-gray-700 hover:text-blue-600 transition font-medium;
+}
+
+.mobile-link {
+  @apply px-4 py-2 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition;
+}
+ 
+form.sending {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Gaya Khusus Halaman Login */
+.login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+                url('../img/warehouse-bg.jpg'); /* Opsional: gunakan background gudang */
+    background-size: cover;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.login-container {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    width: 350px;
+    text-align: center;
+}
+
+.login-container h2 {
+    color: #1a73e8;
+    margin-bottom: 5px;
+}
+
+.login-container p {
+    color: #555;
+    margin-bottom: 25px;
+}
+
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box; /* Agar padding tidak merusak lebar */
+}
+
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    background-color: #1a73e8;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-login:hover {
+    background-color: #1557b0;
 }
