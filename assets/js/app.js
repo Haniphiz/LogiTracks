@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const usernameInput = document.getElementById("username").value;
       const passwordInput = document.getElementById("password").value;
 
-      if (usernameInput === "admin" && passwordInput === "password123") {
+      if (usernameInput === "user" && passwordInput === "123") {
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("username", usernameInput);
         alert("Login Berhasil!");
