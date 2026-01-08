@@ -1,15 +1,9 @@
-# Stage 1: Build assets
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
-RUN npm install
+RUN npm ci --production
 COPY . .
-RUN npm run build  # Ini jalankan Tailwind build dan copy HTML ke dist
-
-# Stage 2: Serve dengan Nginx
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-# Optional: Copy custom nginx config jika perlu
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+RUN npm run build
+RUN npm i -g http-server
+EXPOSE 9876
+CMD ["http-server","dist","-p","9876"]
