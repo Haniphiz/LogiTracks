@@ -14,39 +14,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Use Node 18
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-
-      - name: Cache npm
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run Tailwind build
-        run: npm run build
-
-      - name: Show dist contents
-        run: |
-          echo "dist/ files:" && ls -la dist || true
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image (production)
+      - name: Build Docker image
         run: |
-          docker build -f Dockerfile.prod -t logitrack:${{ github.sha }} .
+          docker build -t logitrack:${{ github.sha }} .
           docker tag logitrack:${{ github.sha }} logitrack:latest
 
       - name: Save Docker image
         run: docker save logitrack:latest | gzip > logitrack.tar.gz
+
+      - name: Verify image file
+        run: ls -la logitrack.tar.gz || true
 
       - name: Upload Docker image as artifact
         uses: actions/upload-artifact@v4
@@ -64,28 +44,41 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Docker image
+      - name: Download Docker image artifact
         uses: actions/download-artifact@v4
         with:
-          name: docker-image
+          name: logitrack-image
+          path: .
+
+      - name: Ensure remote directory exists
+        uses: appleboy/ssh-action@v0.1.9
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          script: |
+            mkdir -p /home/${{ secrets.VPS_USER }}/logitrack
 
       - name: Copy files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VPS_PORT }}
           source: "logitrack.tar.gz,docker-compose.yml"
-          target: "/home/${{ secrets.VPS_USERNAME }}/logitrack"
+          target: "/home/${{ secrets.VPS_USER }}/logitrack"
 
       - name: Deploy with Docker Compose
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VPS_PORT }}
           script: |
-            cd /home/${{ secrets.VPS_USERNAME }}/logitrack
+            cd /home/${{ secrets.VPS_USER }}/logitrack
 
             echo "Loading Docker image..."
             docker load < logitrack.tar.gz
