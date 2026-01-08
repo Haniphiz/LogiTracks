@@ -1,4 +1,4 @@
-name: CI/CD 
+name: CI/CD Static HTML to VPS (Port 9876)
 
 on:
   push:
@@ -9,9 +9,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Ambil source code dari GitHub
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Copy semua file ke VPS
       - name: Copy project to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -21,25 +23,27 @@ jobs:
           source: "."
           target: "/home/${{ secrets.VPS_USERNAME }}/logitrack"
 
-      - name: Build & Deploy on VPS
+      # 3️⃣ Build & Deploy di VPS
+      - name: Build and Deploy with Docker
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
+            set -e
             cd ~/logitrack
 
             echo "🔨 Build Docker image"
             docker build -t logitrack:latest .
 
-            echo "🛑 Stop old container"
-            docker compose down || true
+            echo "🛑 Stop container lama (jika ada)"
+            docker-compose down || true
 
-            echo "🚀 Run new container"
-            docker compose up -d
+            echo "🚀 Jalankan container baru"
+            docker-compose up -d
 
-            echo "📦 Container status:"
+            echo "📦 Status container:"
             docker ps
 
-            echo "✅ App running at http://$(hostname -I | awk '{print $1}'):9876"
+            echo "✅ Website running at http://$(hostname -I | awk '{print $1}'):9876"
