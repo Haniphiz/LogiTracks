@@ -37,13 +37,16 @@ jobs:
             echo "🔨 Build Docker image"
             docker build -t logitrack:latest .
 
-            echo "🛑 Stop container lama (jika ada)"
+            echo "🧹 Stop & remove existing container (force)"
+            docker rm -f logitrack-app || true
+
+            echo "🧹 Stop old compose stack"
             docker-compose down || true
 
-            echo "🚀 Jalankan container baru"
+            echo "🚀 Start new container"
             docker-compose up -d
 
-            echo "📦 Status container:"
+            echo "📦 Running containers:"
             docker ps
 
             echo "✅ Website running at http://$(hostname -I | awk '{print $1}'):9876"
