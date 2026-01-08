@@ -43,10 +43,10 @@ sudo ufw allow 9876/tcp
 
 ## Bagaimana workflow sekarang bekerja
 
-- `build` → menjalankan `npm run build` lalu membuat artifact `site-<sha>.tar.gz` dan upload sebagai artifact `site`.
-- `deploy` → men-download artifact `site`, menyalin `site-<sha>.tar.gz` ke `REMOTE_DIR` di server, mengekstrak isi tar ke `REMOTE_DIR`, lalu:
-  - jika `docker-compose.yml` ada di `REMOTE_DIR`, menjalankan `docker-compose pull` dan `docker-compose up -d`; atau
-  - jika tidak, mencoba `sudo systemctl reload nginx` untuk memuat ulang static site.
+- `build` → menjalankan `npm run build` (Tailwind) untuk menghasilkan `dist/` dari `src/index.html` + `output.css`, kemudian membuat artifact `site-<sha>.tar.gz` dan upload sebagai artifact `site` (opsional), **atau** membangun image produksi dari `dist` dengan `Dockerfile.prod`.
+- `deploy` → jika menggunakan Docker: CI menyimpan `logitrack.tar.gz` (image) dan `docker-compose.yml` akan di-`scp` ke server, ssh: `docker load < logitrack.tar.gz`, lalu `docker-compose up -d` (container memetakan `9876:80`).
+
+Catatan: workflow sekarang **secara eksplisit menjalankan `npm run build`** sebelum membangun image produksi, sehingga Tailwind dijalankan di CI dan `dist/` yang dihasilkan disertakan dalam image (via `Dockerfile.prod`).
 
 ## Secrets yang harus ditambahkan di GitHub (Settings → Secrets)
 

@@ -14,12 +14,35 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Use Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Tailwind build
+        run: npm run build
+
+      - name: Show dist contents
+        run: |
+          echo "dist/ files:" && ls -la dist || true
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build Docker image
+      - name: Build Docker image (production)
         run: |
-          docker build -t logitrack:${{ github.sha }} .
+          docker build -f Dockerfile.prod -t logitrack:${{ github.sha }} .
           docker tag logitrack:${{ github.sha }} logitrack:latest
 
       - name: Save Docker image
@@ -28,7 +51,7 @@ jobs:
       - name: Upload Docker image as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: docker-image
+          name: logitrack-image
           path: logitrack.tar.gz
           retention-days: 1
 
