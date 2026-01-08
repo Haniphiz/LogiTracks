@@ -1,27 +1,9 @@
+version: "3.8"
+
 services:
-  # React Frontend
-  logitrack:
+  web:
     image: logitrack:latest
     container_name: logitrack-app
-    restart: unless-stopped
     ports:
       - "9876:80"
-    networks:
-      - app-network
-    environment:
-      - NODE_ENV=production
-    labels:
-      - "com.logitrack.description=Logitrack Landing Page"
-    healthcheck:
-      test: ["CMD", "sh", "-c", "curl -f http://localhost/ || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-networks:
-  app-network:
-    driver: bridge
-# Volumes untuk future extensions (database, etc)
-# volumes:
-#   db-data:
+    restart: always

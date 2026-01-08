@@ -1,5 +1,11 @@
-# Production Dockerfile: copy prebuilt dist into nginx
 FROM nginx:alpine
-COPY dist /usr/share/nginx/html
+
+# hapus config default
+RUN rm -rf /usr/share/nginx/html/*
+
+# copy HTML statis
+COPY src/ /usr/share/nginx/html/
+
 EXPOSE 80
+
 CMD ["nginx", "-g", "daemon off;"]
