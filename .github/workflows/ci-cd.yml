@@ -1,5 +1,8 @@
 name: CI/CD Static HTML to VPS (Port 9876)
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main, master]
