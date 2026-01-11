@@ -1,11 +1,16 @@
+import { AUTH_CONFIG } from "./config/auth-config.js";
+
 // --- KONFIGURASI GLOBAL ---
 const sections = ["navbar", "hero", "services", "products", "about", "testimonials", "gallery", "team", "kontak", "footer"];
 
 // --- FUNGSI UTAMA ---
-
 document.addEventListener("DOMContentLoaded", () => {
   // 1. CEK STATUS LOGIN (Untuk Navbar)
   checkLoginStatus();
+
+  function validateLogin(username, password) {
+    return username === AUTH_CONFIG.username && password === AUTH_CONFIG.password;
+  }
 
   // 2. LOGIKA HALAMAN LOGIN
   const loginForm = document.getElementById("loginForm");
@@ -15,11 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const usernameInput = document.getElementById("username").value;
       const passwordInput = document.getElementById("password").value;
 
-      if (usernameInput === "user" && passwordInput === "123") {
+      if (validateLogin(usernameInput, passwordInput)) {
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("username", usernameInput);
         alert("Login Berhasil!");
-
         window.location.href = "../index.html";
       } else {
         const errorMsg = document.getElementById("error-msg");
@@ -31,9 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     });
-    return;
   }
 
+  // 3. LOGIKA LOADING SECTIONS
   if (document.getElementById("navbar")) {
     sections.forEach((section) => {
       const el = document.getElementById(section);
@@ -45,35 +49,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (section === "navbar") initMobileNavbar();
             if (section === "testimonials") initTestimonials();
-            if (section === "kontak") initKontakForm(); // ⬅️ TAMBAH INI
+            if (section === "kontak") initKontakForm(); 
           })
-
           .catch((err) => console.warn(`Gagal memuat ${section}`));
       }
     });
     initScrollEffects();
   }
+}); // Penutup DOMContentLoaded yang benar
 
-  // 4. FORM KONTAK
-  const formKontak = document.getElementById("formKontak");
-  if (formKontak) {
-    formKontak.addEventListener("submit", function (e) {
-      e.preventDefault();
-      Swal.fire({
-        title: "Mengirim...",
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-      setTimeout(() => {
-        Swal.fire({ icon: "success", title: "Terkirim!", confirmButtonColor: "#2563eb" });
-        formKontak.reset();
-      }, 1500);
-    });
-  }
-});
-
-// --- Form Login ---
+// --- FUNGSI PENDUKUNG ---
 
 function checkLoginStatus() {
   const isLoggedIn = localStorage.getItem("isLoggedIn");
@@ -133,27 +118,22 @@ function initTestimonials() {
     card.style.transition = "all 0.6s ease-out";
   });
 }
+
 function initKontakForm() {
   const formKontak = document.getElementById("formKontak");
   if (!formKontak) return;
 
   formKontak.addEventListener("submit", function (e) {
     e.preventDefault();
-
     const isLoggedIn = localStorage.getItem("isLoggedIn");
 
-    // ❌ Belum login → redirect
     if (isLoggedIn !== "true") {
       alert("Silakan login terlebih dahulu sebelum mengirim pesan.");
       window.location.href = "sections/login.html";
       return;
     }
 
-    // ✅ Sudah login → tampilkan pesan sukses
-    alert(
-      "Pertanyaan mu sedang kami proses, jawaban akan kami kirim secepatnya melalui email terkait. terimakasi"
-    );
-
+    alert("Pertanyaan mu sedang kami proses, jawaban akan kami kirim secepatnya melalui email terkait. terimakasi");
     formKontak.reset();
   });
 }
